@@ -2,49 +2,64 @@
 #include "pch.h"
 #include "encoder.h"
 #include <iostream>
-// just some fun c++ tools!
+#include <vector>
+#include <cmath>
+using std::vector;
+using std::size_t;
 
-BOOL APIENTRY DllMain(HMODULE hModule,
-    DWORD  ul_reason_for_call,
-    LPVOID lpReserved
-)
+void chartobinary(vector<bool>* Vectorptr, char c[])
 {
-    switch (ul_reason_for_call)
-    {
-    case DLL_PROCESS_ATTACH:
-    case DLL_THREAD_ATTACH:
-    case DLL_THREAD_DETACH:
-    case DLL_PROCESS_DETACH:
-        break;
-    }
-    return TRUE;
+	for (int i = 0; i < strlen(c) - 1; i++)
+	{
+		char output[8];
+		_itoa_s(c[i], output, 2);
+		for (int j = 0; j <= 8; j++)
+		{
+			if (output[j] == '1')
+			{
+				Vectorptr->push_back(1);
+			}
+			else
+			{
+				Vectorptr->push_back(0);
+			}
+		}
+	}
+}
+int binarytosine(vector<double>* Vectorptr, vector<bool>* invect)
+{   
+	
+	for (size_t j = 0; j < invect->size(); j++)
+	{
+		if ((*invect)[j] == true)
+		{
+			double i = 0;
+			while (i <= PER_BIT)
+			{
+				Vectorptr->push_back(AMPLITUDE * sin(2 * M_PI * (BAUD * 4) * i + 0));
+				i += PER_SAMPLE;
+			}
+		}
+		else if ((*invect)[j] == false)
+		{
+			double i = 0;
+			while (i <= PER_BIT)
+			{
+				Vectorptr->push_back(AMPLITUDE * sin(2 * M_PI * (BAUD * 3) * i + 0));
+				i += PER_SAMPLE;
+			}
+		}
+		else
+		{
+			double i = 0;
+			while (i <= PER_BIT)
+			{
+				Vectorptr->push_back(0);
+				i += PER_SAMPLE;
+			}
+		}
+	}
+	return 0;
 }
 
 
-void SetForegroundColorRGB(int r, int g, int b)
-{
-    char esc[200];
-    sprintf_s(esc, "\x1b[38;2;%i;%i;%im", r, g, b);
-    std::cout << esc;
-}
-
-
-void SetBackgroundColorRGB(int r, int g, int b)
-{
-    char esc[200];
-    sprintf_s(esc, "\x1b[48;2;%i;%i;%im", r, g, b);
-    std::cout << esc;
-}
-
-
-void ResetColors()
-{
-    std::cout << "\x1b[0m";
-}
-
-
-void ClearConsole()
-{
-    std::cout << "\x1b[2J";
-    std::cout << "\x1b[H";
-}

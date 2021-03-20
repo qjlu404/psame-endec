@@ -1,31 +1,19 @@
 #pragma once
-
 #ifdef ENCODER_EXPORTS
 #define ENCODER __declspec(dllexport)
 #else
 #define ENCODER __declspec(dllimport)
 #endif
+#include <vector>
+using std::vector;
+constexpr auto AMPLITUDE = 30000;
+constexpr auto SAMPLE_RATE = 44100;
+constexpr auto M_PI = 3.1415926535;
+constexpr auto BAUD = 520.825;
+constexpr auto PER_BIT = 0.00192;
+constexpr auto PER_SAMPLE = 0.00002267573;
+#define SPACE 86 // Sample rate divided by baud rounded up to the nearest integer
 
-/// <summary>
-/// Changes the console foreground color to an RGB value
-/// </summary>
-/// <param name="R"> Red (0-255) </param>
-/// <param name="G"> Green (0-255) </param>
-/// <param name="B"> Blue (0-255) </param>
-extern "C" ENCODER void SetForegroundColorRGB(int r, int g, int b);
-/// <summary>
-/// Changes the console background color to an RGB value
-/// </summary>
-/// <param name="R"> Red (0-255) </param>
-/// <param name="G"> Green (0-255) </param>
-/// <param name="B"> Blue (0-255) </param>
-extern "C" ENCODER void SetBackgroundColorRGB(int r, int g, int b);
-/// <summary>
-/// Resets the console colors to default
-/// </summary>
-extern "C" ENCODER void ResetColors();
-/// <summary>
-/// Clears the console
-/// </summary>
-extern "C" ENCODER void ClearConsole();
 
+extern "C" ENCODER void chartobinary(vector<bool>* Vectorptr, char c[]);
+extern "C" ENCODER int binarytosine(vector<double>* Vectorptr, vector<bool>* invect);
