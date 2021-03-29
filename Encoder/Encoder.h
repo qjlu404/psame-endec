@@ -4,16 +4,14 @@
 #else
 #define ENCODER __declspec(dllimport)
 #endif
-#include <vector>
 using std::vector;
-constexpr auto AMPLITUDE = 30000;
-constexpr auto SAMPLE_RATE = 44100;
-constexpr auto M_PI = 3.1415926535;
+constexpr auto AMPLITUDE = 32760;
+constexpr auto SAMPLE_RATE = 96000;
+constexpr auto M_PI = 3.14159265359;
 constexpr auto BAUD = 520.825;
 constexpr auto PER_BIT = 0.00192;
-constexpr auto PER_SAMPLE = 0.00002267573;
+constexpr auto PER_SAMPLE = 0.00001041666;
 #define SPACE 86 // Sample rate divided by baud rounded up to the nearest integer
-
-
-extern "C" ENCODER void chartobinary(vector<bool>* Vectorptr, char c[]);
-extern "C" ENCODER int binarytosine(vector<double>* Vectorptr, vector<bool>* invect);
+using std::vector;
+using std::size_t;
+extern "C" ENCODER int encode(std::string alert, bool attn, int attntime, int delaybeforetone, int delaybefore, int delayafter, int delayend);

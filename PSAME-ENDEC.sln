@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ENDEC", "easencoder\easenco
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Encoder", "Encoder\Encoder.vcxproj", "{1034A811-55F8-4428-9727-586EE6F73EDD}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "polygon", "polygon\polygon.vcxproj", "{4D19D8D8-A295-45D3-A8A0-E92E72E5E5AF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM = Debug|ARM
@@ -39,6 +41,16 @@ Global
 		{1034A811-55F8-4428-9727-586EE6F73EDD}.Release|x64.Build.0 = Release|x64
 		{1034A811-55F8-4428-9727-586EE6F73EDD}.Release|x86.ActiveCfg = Release|Win32
 		{1034A811-55F8-4428-9727-586EE6F73EDD}.Release|x86.Build.0 = Release|Win32
+		{4D19D8D8-A295-45D3-A8A0-E92E72E5E5AF}.Debug|ARM.ActiveCfg = Debug|Win32
+		{4D19D8D8-A295-45D3-A8A0-E92E72E5E5AF}.Debug|x64.ActiveCfg = Debug|x64
+		{4D19D8D8-A295-45D3-A8A0-E92E72E5E5AF}.Debug|x64.Build.0 = Debug|x64
+		{4D19D8D8-A295-45D3-A8A0-E92E72E5E5AF}.Debug|x86.ActiveCfg = Debug|Win32
+		{4D19D8D8-A295-45D3-A8A0-E92E72E5E5AF}.Debug|x86.Build.0 = Debug|Win32
+		{4D19D8D8-A295-45D3-A8A0-E92E72E5E5AF}.Release|ARM.ActiveCfg = Release|Win32
+		{4D19D8D8-A295-45D3-A8A0-E92E72E5E5AF}.Release|x64.ActiveCfg = Release|x64
+		{4D19D8D8-A295-45D3-A8A0-E92E72E5E5AF}.Release|x64.Build.0 = Release|x64
+		{4D19D8D8-A295-45D3-A8A0-E92E72E5E5AF}.Release|x86.ActiveCfg = Release|Win32
+		{4D19D8D8-A295-45D3-A8A0-E92E72E5E5AF}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
