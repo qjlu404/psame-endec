@@ -28,14 +28,12 @@ void whileloading()
 void enc(std::string input)
 {
 	encode(input, 0, 0, 1, 1, 1, 1);
-	Sleep(6000);
 }
 int main()
 {
 	std::cout << "enter full alert text: ";
 	std::string input;
 	std::cin >> input;
-	
 	std::thread t1 (enc,input);
 	loading = true;
 	std::thread t2(whileloading);

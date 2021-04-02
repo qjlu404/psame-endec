@@ -12,11 +12,9 @@ void chartobinary(vector<bool>* Vectorptr, string c)
 {
 	for (int i = 0; i < c.size() - 1; i++)
 	{
-		string output;
-		string a = "0";
-		output.append(std::bitset<7>(c[i]).to_string());
-		output.append(a);
-		
+		string output; 
+		output.append(std::bitset<8>(c[i]).to_string());
+
 		for (size_t j = 0; j <= output.size(); j++)
 		{
 			if (output[j] == '1')
@@ -31,7 +29,7 @@ void chartobinary(vector<bool>* Vectorptr, string c)
 		}
 	}
 }
-int binarytosine(vector<double>* Vectorptr, vector<bool>* invect)
+int addwave(vector<double>* Vectorptr, vector<bool>* invect)
 {   
 	
 	for (size_t j = 0; j < invect->size(); j++)
@@ -41,7 +39,7 @@ int binarytosine(vector<double>* Vectorptr, vector<bool>* invect)
 			double i = 0;
 			while (i <= PER_BIT)
 			{
-				Vectorptr->push_back((AMPLITUDE) * sin(2 * M_PI * (BAUD * 4) * i + 0));
+				Vectorptr->push_back((AMPLITUDE) * sin(2 * M_PI * ((double)BAUD * 4) * i + 0));
 				i += PER_SAMPLE;
 			}
 		}
@@ -50,7 +48,7 @@ int binarytosine(vector<double>* Vectorptr, vector<bool>* invect)
 			double i = 0;
 			while (i <= PER_BIT)
 			{
-				Vectorptr->push_back((AMPLITUDE) * sin(2 * M_PI * (BAUD * 3) * i + 0));
+				Vectorptr->push_back((AMPLITUDE) * sin(2 * M_PI * ((double)BAUD * 3) * i + 0));
 				i += PER_SAMPLE;
 			}
 		}
@@ -60,10 +58,38 @@ int binarytosine(vector<double>* Vectorptr, vector<bool>* invect)
 void delay(vector<double>* Vectorptr, int delay)
 {
 	double i = 0;
-	while (i <= (double)SAMPLE_RATE * delay)
+	unsigned long long int j = 1;
+	while (j <= SAMPLE_RATE * delay)
 	{
-		Vectorptr->push_back(0);
-		i ++;
+		Vectorptr->push_back((AMPLITUDE / 8)*sin(2 * M_PI *((rand()%time(NULL) / 100)) * i + 0));
+		i += 0.00001041666;
+		j++;
+	}
+}
+void effect(vector<double>* Vectorptr, unsigned int times, bool hilo)
+{
+	unsigned int j = 0;
+	while (j <= times)
+	{
+		if (hilo)
+		{
+			double i = 0;
+			while (i <= PER_BIT)
+			{
+				Vectorptr->push_back((AMPLITUDE)*sin(2 * M_PI * ((double)BAUD * 4) * i + 0));
+				i += PER_SAMPLE;
+			}
+		}
+		else
+		{
+			double i = 0;
+			while (i <= PER_BIT)
+			{
+				Vectorptr->push_back((AMPLITUDE)*sin(2 * M_PI * ((double)BAUD * 3) * i + 0));
+				i += PER_SAMPLE;
+			}
+		}
+		j++;
 	}
 }
 void attna(vector<double>* Vectorptr, int time)
@@ -88,32 +114,61 @@ void attnb(vector<double>* Vectorptr, int time)
 		i++;
 	}
 }
-int encode(string alert, bool attn, int attntime, int delaybeforetone, int delaybefore, int delayafter, int delayend)
+int encode(string& alert, bool attn, int attntime, int delaybeforetone, int delaybefore, int delayafter, int delayend)
 {
-	string nnnn = "NNNN";
-	vector<double> pcm;
-	vector<bool> peep;
-	int randnumber = (rand() % 10);
-	for (int i = 0; i < randnumber; i++)
-	{
-		peep.push_back(1);
-	}
 	vector<bool> binarydata;
+	vector<bool> preamble = {
+		1,0,1,0,1,0,1,1,
+		1,0,1,0,1,0,1,1,
+		1,0,1,0,1,0,1,1,
+		1,0,1,0,1,0,1,1,
+		1,0,1,0,1,0,1,1,
+		1,0,1,0,1,0,1,1,
+		1,0,1,0,1,0,1,1,
+		1,0,1,0,1,0,1,1,
+		1,0,1,0,1,0,1,1,
+		1,0,1,0,1,0,1,1,
+		1,0,1,0,1,0,1,1,
+		1,0,1,0,1,0,1,1,
+		1,0,1,0,1,0,1,1,
+		1,0,1,0,1,0,1,1,
+		1,0,1,0,1,0,1,1,
+		1,0,1,0,1,
+	};
+	vector<double> pcm;
 	vector<bool> EOM;
+	bool peepchoice; 
+	if (alert.size() % 2 == 0)
+		peepchoice = 0;
+	else
+		peepchoice = 1;
+
+	string nnnn = "NNNN";
+	
+	//char to binary and stuff
 	delay(&pcm, delaybeforetone);
 	chartobinary(&binarydata, alert);
 	chartobinary(&EOM, nnnn);
-	binarytosine(&pcm, &peep);
-	binarytosine(&pcm, &binarydata);
-	binarytosine(&pcm, &peep);
-	delay(&pcm, 1);
-	binarytosine(&pcm, &peep);
-	binarytosine(&pcm, &binarydata);
-	binarytosine(&pcm, &peep);
-	delay(&pcm, 1);
-	binarytosine(&pcm, &peep);
-	binarytosine(&pcm, &binarydata);
-	binarytosine(&pcm, &peep);
+	//main tones
+	effect(&pcm, (unsigned int)(alert.size() / 2), 1);
+	addwave(&pcm, &preamble); 
+	addwave(&pcm, &binarydata); 
+	effect(&pcm, (unsigned int)(alert.size() / 2), 1);
+
+	delay(&pcm, 1); 
+
+	effect(&pcm, (unsigned int)(alert.size() / 2), 1);
+	addwave(&pcm, &preamble); 
+	addwave(&pcm, &binarydata); 
+	effect(&pcm, (unsigned int)(alert.size() / 2), 1);
+
+	delay(&pcm, 1); 
+	
+	effect(&pcm, (unsigned int)(alert.size() / 2), 1);
+	addwave(&pcm, &preamble); 
+	addwave(&pcm, &binarydata); 
+	effect(&pcm, (unsigned int)(alert.size() / 2), 1);
+	//tone and msg
 	delay(&pcm, delaybefore);
 	if (attn)
 	{
@@ -124,20 +179,27 @@ int encode(string alert, bool attn, int attntime, int delaybeforetone, int delay
 		attnb(&pcm, attntime);
 	}
 	delay(&pcm, delayafter);
-	binarytosine(&pcm, &peep);
-	binarytosine(&pcm, &EOM);
-	binarytosine(&pcm, &peep);
-	delay(&pcm, 1);
-	binarytosine(&pcm, &peep);
-	binarytosine(&pcm, &EOM);
-	binarytosine(&pcm, &peep);
-	delay(&pcm, 1);
-	binarytosine(&pcm, &peep);
-	binarytosine(&pcm, &EOM);
-	binarytosine(&pcm, &peep);
+	//eom
+	effect(&pcm, (unsigned int)(alert.size() / 2), 1);
+	addwave(&pcm, &preamble); 
+	addwave(&pcm, &EOM); 
+	effect(&pcm, (unsigned int)(alert.size() / 2), 1);
+
 	delay(&pcm, 1);
 
-	binarydata.clear();
+	effect(&pcm, (unsigned int)(alert.size() / 2), 1);
+	addwave(&pcm, &preamble); 
+	addwave(&pcm, &EOM); 
+	effect(&pcm, (unsigned int)(alert.size() / 2), 1);
+
+	delay(&pcm, 1);
+
+	effect(&pcm, (unsigned int)(alert.size() / 2), 1);
+	addwave(&pcm, &preamble);
+	addwave(&pcm, &EOM); 
+	effect(&pcm, (unsigned int)(alert.size() / 2), 1);
+
+	delay(&pcm, 1);
 	
 	ofstream audioFile;
 	audioFile.open("eas.wav", std::ios::binary);
@@ -156,10 +218,9 @@ int encode(string alert, bool attn, int attntime, int delaybeforetone, int delay
 	writeToFile(audioFile, 16, 2); // Bit depth
 	audioFile << "data";
 	audioFile << "----";
-	double preAudioPosition = audioFile.tellp();
+	double preAudioPosition = (double)audioFile.tellp();
 	auto maxAmplitude = pow(2, 16 - 1) - 1;
-	int b = pcm.size();
-	for (size_t i = 0; i < pcm.size(); i++)
+	for (int i = 0; i < pcm.size(); i++)
 	{
 		writeToFile(audioFile, pcm[i], 2);
 	}
