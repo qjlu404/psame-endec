@@ -9,6 +9,8 @@
 
 // add headers that you want to pre-compile here
 #include "framework.h"
+#include <vector>
 #include <iostream>
 #include <cmath>
+#include <algorithm>
 #endif //PCH_H

@@ -27,7 +27,8 @@ void whileloading()
 }
 void enc(std::string input)
 {
-	encode(input, 0, 0, 1, 1, 1, 1);
+	encoder a;
+	a.encode(input, 0, 0, 1, 0, 1, 1);
 }
 int main()
 {
@@ -40,6 +41,5 @@ int main()
 	t1.join();
 	loading = false; 
 	t2.join();
-
 	return 0;
 }
