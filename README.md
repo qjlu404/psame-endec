@@ -8,7 +8,11 @@ plans for the program:
 
 ### plans for the overall structure:  
 Encoder - dll
-Decoder - dll calls a function in encoder when decoded message
+
+Decoder - dll 
+
 Chargen - dll
 
 main/ui - exe
+
+decoder calls a function in encoder when decoded message, encoder gets the decoded msgs and compares them for error checking reencodes and then calls the chargen
