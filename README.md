@@ -6,13 +6,17 @@ plans for the program:
 - - [ ] make a decoder.
 - - [ ] have an inline video stream.
 
-### plans for the overall structure:  
+#### plans for the overall structure:  
 Encoder - dll
 
 Decoder - dll 
 
-Chargen - dll
+main/ui - exe < encoder & decoder
 
-main/ui - exe
+Character gen - exe
 
-decoder calls a function in encoder and calls a function to record the message in between the headers. when decoded message, encoder gets the decoded msgs and compares them for error checking reencodes, records voice/plays recorded msg and then calls the chargen which plays a crawl text and encoded audio.
+### On Encode:
+Encoder encodes the headers then calls the character gen with information like what alert type and stuff.
+
+### On Decode:
+Decoder compsares the 3 eas header tones and compares them for error checking and reencodes data and records the message in between the header and EOM. Encoder will replay the audible data as it's being recorded for lower latency.
