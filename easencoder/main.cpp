@@ -32,9 +32,11 @@ void enc(std::string input)
 }
 int main()
 {
-	std::cout << "enter full alert text: ";
+	//std::cout << "enter full alert text: ";
 	std::string input;
-	std::cin >> input;
+	input = "ZCZC-WXR-TOR-081376+0015-1231212-ABCDEFGH";
+	//std::cin >> input;
+
 	std::thread t1 (enc,input);
 	loading = true;
 	std::thread t2(whileloading);
@@ -42,4 +44,5 @@ int main()
 	loading = false; 
 	t2.join();
 	return 0;
+
 }
