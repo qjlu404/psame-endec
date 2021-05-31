@@ -14,8 +14,8 @@ double PER_BIT = 0.00192;
 double PER_SAMPLE = 0.00001041666;
 using std::vector;
 using std::size_t;
-extern "C" class ENCODER encoder
+extern "C" class ENCODER Encoder
 {
 public:
-	void encode(std::string& alert, bool attn, int attntime, int delaybeforetone, int delaybefore, int delayafter, int delayend);
+	void encode(std::string alert, bool attn, int attntime, int delaybeforetone, int delaybefore, int delayafter, int delayend);
 };

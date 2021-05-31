@@ -9,8 +9,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Encoder", "Encoder\Encoder.
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Decoder", "Decoder\Decoder.vcxproj", "{CCD375F2-B705-4719-8BBD-68AEE1DD3711}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Chargen", "Chargen\Chargen.vcxproj", "{77C4A8E5-C2BF-4764-9578-8AEFD0730CD0}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM = Debug|ARM
@@ -53,16 +51,6 @@ Global
 		{CCD375F2-B705-4719-8BBD-68AEE1DD3711}.Release|x64.Build.0 = Release|x64
 		{CCD375F2-B705-4719-8BBD-68AEE1DD3711}.Release|x86.ActiveCfg = Release|Win32
 		{CCD375F2-B705-4719-8BBD-68AEE1DD3711}.Release|x86.Build.0 = Release|Win32
-		{77C4A8E5-C2BF-4764-9578-8AEFD0730CD0}.Debug|ARM.ActiveCfg = Debug|Win32
-		{77C4A8E5-C2BF-4764-9578-8AEFD0730CD0}.Debug|x64.ActiveCfg = Debug|x64
-		{77C4A8E5-C2BF-4764-9578-8AEFD0730CD0}.Debug|x64.Build.0 = Debug|x64
-		{77C4A8E5-C2BF-4764-9578-8AEFD0730CD0}.Debug|x86.ActiveCfg = Debug|Win32
-		{77C4A8E5-C2BF-4764-9578-8AEFD0730CD0}.Debug|x86.Build.0 = Debug|Win32
-		{77C4A8E5-C2BF-4764-9578-8AEFD0730CD0}.Release|ARM.ActiveCfg = Release|Win32
-		{77C4A8E5-C2BF-4764-9578-8AEFD0730CD0}.Release|x64.ActiveCfg = Release|x64
-		{77C4A8E5-C2BF-4764-9578-8AEFD0730CD0}.Release|x64.Build.0 = Release|x64
-		{77C4A8E5-C2BF-4764-9578-8AEFD0730CD0}.Release|x86.ActiveCfg = Release|Win32
-		{77C4A8E5-C2BF-4764-9578-8AEFD0730CD0}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

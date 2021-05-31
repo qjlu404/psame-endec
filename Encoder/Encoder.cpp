@@ -12,35 +12,39 @@ void save(vector<double>& pcm, string fname)
 	ofstream audioFile;
 	audioFile.open(fname, std::ios::binary);
 
-	audioFile << "RIFF";
-	audioFile << "----";
-	audioFile << "WAVE";
-
-	audioFile << "fmt ";
-	writeToFile(audioFile, 16, 4); // Size
-	writeToFile(audioFile, 1, 2); // Compression code
-	writeToFile(audioFile, 1, 2); // Number of channels
-	writeToFile(audioFile, (int)SAMPLE_RATE, 4); // Sample rate
-	writeToFile(audioFile, (int)SAMPLE_RATE * 16 / 8, 4); // Byte rate
-	writeToFile(audioFile, 16 / 8, 2); // Block align
-	writeToFile(audioFile, 16, 2); // Bit depth
-	audioFile << "data";
-	audioFile << "----";
-	//auto maxAmplitude = pow(2, 16 - 1) - 1;
-	//double preAudioPosition = (double)audioFile.tellp();
+	audioFile << "RIFF---WAVEfmt ";
+	writeToFile(audioFile, 16, 4);
+	size_t setsizea = audioFile.tellp();
+	writeToFile(audioFile, 2, 2);
+	writeToFile(audioFile, 2, 2);
+	writeToFile(audioFile, (int)SAMPLE_RATE, 4);
+	writeToFile(audioFile, (int)SAMPLE_RATE * 4, 4);
+	writeToFile(audioFile, 4, 2);
+	writeToFile(audioFile, 32, 2);
+	size_t data_chunk_pos = audioFile.tellp();
+	audioFile << "data----";
 	for (int i = 0; i < pcm.size(); i++)
 	{
 		writeToFile(audioFile, pcm[i], 2);
 	}
+	size_t file_length = audioFile.tellp();
+
+	audioFile.seekp(setsizea);
+	writeToFile(audioFile, pcm.size(), 4);
+	audioFile.seekp(data_chunk_pos + 4);
+	writeToFile(audioFile, file_length - data_chunk_pos + 8, sizeof(size_t));
+	
+
+	// Fix the file header to contain the proper RIFF chunk size, which is (file size - 8) bytes
+	audioFile.seekp(0 + 4);
+	writeToFile(audioFile, file_length - 8, 4);
 }
 void chartobinary(vector<bool>* Vectorptr, string c)
 	{
 		for (int i = 0; i < c.size() - 1; i++)
 		{
 			string output;
-			string a = "0";
-			output.append(std::bitset<7>(c[i] & 0x7f).to_string());
-			output.append(a);
+			output.append(std::bitset<8>(c[i] & 0x7f).to_string());;
 
 			for (size_t j = 0; j <= output.size(); j++)
 			{
@@ -56,7 +60,7 @@ void chartobinary(vector<bool>* Vectorptr, string c)
 			}
 		}
 	}
-int addwave(vector<double>* Vectorptr, vector<bool>& invect)
+inline int addwave(vector<double>* Vectorptr, vector<bool>& invect)
 	{
 
 		for (size_t j = 0; j < invect.size(); j++)
@@ -82,7 +86,7 @@ int addwave(vector<double>* Vectorptr, vector<bool>& invect)
 		}
 		return 0;
 	}
-void delay(vector<double>* Vectorptr, int delay)
+inline void delay(vector<double>* Vectorptr, int delay)
 	{
 		double i = 0;
 		unsigned long long int j = 1;
@@ -93,7 +97,7 @@ void delay(vector<double>* Vectorptr, int delay)
 			j++;
 		}
 	}
-void effect(vector<double>* Vectorptr, unsigned int times, bool hilo)
+inline void effect(vector<double>* Vectorptr, unsigned int times, bool hilo)
 	{
 		unsigned int j = 0;
 		while (j <= times)
@@ -119,7 +123,7 @@ void effect(vector<double>* Vectorptr, unsigned int times, bool hilo)
 			j++;
 		}
 	}
-void attna(vector<double>* Vectorptr, int time)
+inline void attna(vector<double>* Vectorptr, int time)
 	{
 		int i = 0;
 		double j = 0;
@@ -130,7 +134,7 @@ void attna(vector<double>* Vectorptr, int time)
 			i++;
 		}
 	}
-void attnb(vector<double>* Vectorptr, int time)
+inline void attnb(vector<double>* Vectorptr, int time)
 	{
 		double j = 0;
 		int i = 0;
@@ -141,7 +145,7 @@ void attnb(vector<double>* Vectorptr, int time)
 			i++;
 		}
 	}
-void encoder::encode(string& alert, bool attn, int attntime, int delaybeforetone, int delaybefore, int delayafter, int delayend)
+void Encoder::encode(string alert, bool attn, int attntime, int delaybeforetone, int delaybefore, int delayafter, int delayend)
 {
 	vector<bool> binarydata;
 	vector<bool> EOM = {
