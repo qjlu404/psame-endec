@@ -6,12 +6,11 @@
 #define ENCODER __declspec(dllimport)
 #endif
 using std::vector;
-double AMPLITUDE = 32700;
-double SAMPLE_RATE = 96000;
-double M_PI = 3.14159265359;
+double AMPLITUDE = 1;
+double SAMPLE_RATE = 44100;
 double BAUD = 520 + 5/6;
 double PER_BIT = 0.00192;
-double PER_SAMPLE = 0.00001041666;
+double PER_SAMPLE = 1 / SAMPLE_RATE;
 using std::vector;
 using std::size_t;
 extern "C" class ENCODER Encoder

@@ -4,6 +4,10 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 16.0.31019.35
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "endec", "easencoder\easencoder.vcxproj", "{D03AAAE8-316B-43B6-B8C0-C7BC429301C3}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1034A811-55F8-4428-9727-586EE6F73EDD} = {1034A811-55F8-4428-9727-586EE6F73EDD}
+		{CCD375F2-B705-4719-8BBD-68AEE1DD3711} = {CCD375F2-B705-4719-8BBD-68AEE1DD3711}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Encoder", "Encoder\Encoder.vcxproj", "{1034A811-55F8-4428-9727-586EE6F73EDD}"
 EndProject

@@ -1,43 +1,17 @@
 #include "pch.h"
 #include "encoder.h"
-#include "../Decoder/Decoder.h"
 using std::ofstream;
 using std::string;
-void writeToFile(ofstream& file, int value, int size)
-	{
-		file.write(reinterpret_cast<const char*> (&value), size);
-	}
-void save(vector<double>& pcm, string fname)
+void save(vector<float>& pcm, string fname)
 {
-	ofstream audioFile;
-	audioFile.open(fname, std::ios::binary);
-
-	audioFile << "RIFF---WAVEfmt ";
-	writeToFile(audioFile, 16, 4);
-	size_t setsizea = audioFile.tellp();
-	writeToFile(audioFile, 2, 2);
-	writeToFile(audioFile, 2, 2);
-	writeToFile(audioFile, (int)SAMPLE_RATE, 4);
-	writeToFile(audioFile, (int)SAMPLE_RATE * 4, 4);
-	writeToFile(audioFile, 4, 2);
-	writeToFile(audioFile, 32, 2);
-	size_t data_chunk_pos = audioFile.tellp();
-	audioFile << "data----";
-	for (int i = 0; i < pcm.size(); i++)
-	{
-		writeToFile(audioFile, pcm[i], 2);
-	}
-	size_t file_length = audioFile.tellp();
-
-	audioFile.seekp(setsizea);
-	writeToFile(audioFile, pcm.size(), 4);
-	audioFile.seekp(data_chunk_pos + 4);
-	writeToFile(audioFile, file_length - data_chunk_pos + 8, sizeof(size_t));
-	
-
-	// Fix the file header to contain the proper RIFF chunk size, which is (file size - 8) bytes
-	audioFile.seekp(0 + 4);
-	writeToFile(audioFile, file_length - 8, 4);
+	AudioFile<float> audioFile;
+	AudioFile<float>::AudioBuffer buffer;
+	buffer.resize(1);
+	buffer[0] = pcm;
+	audioFile.setSampleRate(SAMPLE_RATE);
+	audioFile.setNumChannels(1);
+	bool ok = audioFile.setAudioBuffer(buffer);
+	audioFile.save(fname);
 }
 void chartobinary(vector<bool>* Vectorptr, string c)
 	{
@@ -60,7 +34,7 @@ void chartobinary(vector<bool>* Vectorptr, string c)
 			}
 		}
 	}
-inline int addwave(vector<double>* Vectorptr, vector<bool>& invect)
+inline int addwave(vector<float>* Vectorptr, vector<bool>& invect)
 	{
 
 		for (size_t j = 0; j < invect.size(); j++)
@@ -86,7 +60,7 @@ inline int addwave(vector<double>* Vectorptr, vector<bool>& invect)
 		}
 		return 0;
 	}
-inline void delay(vector<double>* Vectorptr, int delay)
+inline void delay(vector<float>* Vectorptr, int delay)
 	{
 		double i = 0;
 		unsigned long long int j = 1;
@@ -97,7 +71,7 @@ inline void delay(vector<double>* Vectorptr, int delay)
 			j++;
 		}
 	}
-inline void effect(vector<double>* Vectorptr, unsigned int times, bool hilo)
+inline void effect(vector<float>* Vectorptr, unsigned int times, bool hilo)
 	{
 		unsigned int j = 0;
 		while (j <= times)
@@ -123,7 +97,7 @@ inline void effect(vector<double>* Vectorptr, unsigned int times, bool hilo)
 			j++;
 		}
 	}
-inline void attna(vector<double>* Vectorptr, int time)
+inline void attna(vector<float>* Vectorptr, int time)
 	{
 		int i = 0;
 		double j = 0;
@@ -134,7 +108,7 @@ inline void attna(vector<double>* Vectorptr, int time)
 			i++;
 		}
 	}
-inline void attnb(vector<double>* Vectorptr, int time)
+inline void attnb(vector<float>* Vectorptr, int time)
 	{
 		double j = 0;
 		int i = 0;
@@ -169,13 +143,13 @@ void Encoder::encode(string alert, bool attn, int attntime, int delaybeforetone,
 		1,0,1,0,1,0,1,1,
 		1,0,1,0,1,0,1,1
 	};
-	vector<double> pcm;
+	vector<float> pcm;
 	bool peepchoice;
 	if (alert.size() % 2 != 0)
 		peepchoice = 0;
 	else
 		peepchoice = 1;
-	unsigned int pl = (unsigned int)(alert.size() / 2);
+	unsigned int pl = (unsigned int)(alert.size() / 3);
 
 	//char to binary and stuff
 	delay(&pcm, delaybeforetone);

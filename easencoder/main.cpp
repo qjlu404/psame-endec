@@ -1,36 +1,70 @@
 #include "../Encoder/Encoder.h"
 #include <windows.h>
-#include <new>
 #include <string>
-#include <future>
-#define ID_BUTTON1 0x8801
-#define ID_BUTTON2 0x8802
+#include <new>
+#define ID_BUTTON1 0x6901
+#define ID_BUTTON2 0x6902
+#define ID_BUTTON3 0x6903
+#define ID_EDIT1 0x6904
 struct StateInfo
 {
 
 };
-struct globals
+struct ProgramData
 {
-
+    bool filled, attntype;
+    int attntime, initialdelay, attndelay, eomdelay, afteomdelay, windowtxtlen;
+    HWND button1, button2, button3, edit1;
+    HANDLE myhandle;
+    DWORD mythreadid;
+    std::string whole, preamble, origionator, alert, counties, time, date, timestart, csig;
 };
+wchar_t text[500];
+ProgramData pdata;
+DWORD WINAPI stoppb()
+{
+    return PlaySound(NULL, 0, 0);
+}
 DWORD WINAPI playback()
 {
-    return PlaySound(L"pcm.wav", NULL, SND_SYNC | SND_NODEFAULT);
+    return PlaySound(L"pcm.wav", NULL, SND_ASYNC);
 }
-inline StateInfo* GetAppState(HWND hwnd)
+void encode()
 {
-    LONG_PTR ptr = GetWindowLongPtr(hwnd, GWLP_USERDATA);
-    StateInfo* pState = reinterpret_cast<StateInfo*>(ptr);
-    return pState;
+    /*std::string alert = "ZCZC" + pdata.origionator + pdata.alert + pdata.counties +
+        pdata.time + pdata.timestart + pdata.csig;*/
+    char ctext[500];
+    wcstombs(ctext, text, 500);
+    std::string alert = ctext;
+    Encoder e;
+    e.encode(alert, pdata.attntype, pdata.attntime, pdata.initialdelay, pdata.attndelay, pdata.eomdelay, pdata.afteomdelay);
 }
 void OnResize(HWND hwnd)
 {
     SetWindowPos(hwnd, NULL, NULL, NULL, 600, 300, SWP_NOMOVE | SWP_NOOWNERZORDER);
 }
-
+void CreateControls(HWND hwnd)
+{
+    pdata.button1 = CreateWindowW(L"BUTTON", L"Play Alert", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
+        120, 220, 100, 30, hwnd, (HMENU)ID_BUTTON1, (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE), NULL);
+    pdata.button2 = CreateWindowW(L"BUTTON", L"Encode", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
+        10, 220, 100, 30, hwnd, (HMENU)ID_BUTTON2, (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE), NULL);
+    pdata.button3 = CreateWindowW(L"BUTTON", L"Stop Alert", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
+        230, 220, 100, 30, hwnd, (HMENU)ID_BUTTON3, (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE), NULL);
+    pdata.edit1 = CreateWindowW(L"EDIT", L"Alert Text (Not Implemented yet)", WS_BORDER | WS_CHILD | WS_VISIBLE | ES_LEFT,
+        10, 20, 550, 20, hwnd, (HMENU)ID_EDIT1, (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE), NULL);
+}
+StateInfo* GetAppState(HWND hwnd)
+{
+    LONG_PTR ptr = GetWindowLongPtr(hwnd, GWLP_USERDATA);
+    StateInfo* pState = reinterpret_cast<StateInfo*>(ptr);
+    return pState;
+}
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     StateInfo* pState;
+    if (pdata.filled) EnableWindow(pdata.button2, 1);
+    else EnableWindow(pdata.button2, 0);
     if (uMsg == WM_CREATE)
     {
         CREATESTRUCT* pCreate = reinterpret_cast<CREATESTRUCT*>(lParam);
@@ -68,38 +102,53 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         WORD wmid = LOWORD(wParam);
         WORD wmEvent = HIWORD(wParam);
-
+        if (wmEvent == EN_CHANGE)
+        {
+            GetWindowText(pdata.edit1, text, 100);
+            HANDLE myhandle;
+            DWORD mythreadid;
+            myhandle = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)encode, 0, 0, &mythreadid);
+        }
         if (wmEvent == BN_CLICKED)
         {
             if (wmid == ID_BUTTON1)
             {
-                HANDLE myhandle;
-                DWORD mythreadid;
-                myhandle = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)playback, 0, 0, &mythreadid);
+                pdata.myhandle = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)playback, 0, 0, &pdata.mythreadid);
             }
             if (wmid == ID_BUTTON2)
             {
-                std::string alert = "ZCZC-WXR-TOR-0234-2342-3423-56675-74554-4234467+0015-1231212-12345678";
-                Encoder e;
-                e.encode(alert, 1, 7, 0, 2, 0, 1);
+                HANDLE myhandle;
+                DWORD mythreadid;
+                myhandle = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)encode, 0, 0, &mythreadid);
+            }
+            if (wmid == ID_BUTTON3)
+            {
+                HANDLE myhandle;
+                DWORD mythreadid;
+                myhandle = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)stoppb, 0, 0, &mythreadid);
             }
         }
     }
-
     return DefWindowProc(hwnd, uMsg, wParam, lParam);
-}
-void CreateButtons(HWND hwnd)
-{
-    CreateWindowW(L"BUTTON", L"Encode", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
-        10, 220, 100, 30, hwnd, (HMENU)ID_BUTTON2, (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE), NULL);
-     CreateWindowW(L"BUTTON", L"Play Alert", WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
-        120, 220, 100, 30, hwnd, (HMENU)ID_BUTTON1, (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE), NULL);
 }
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
 {
-    const wchar_t CLASS_NAME[] = L"Sample Window Class";
+    const wchar_t CLASS_NAME[] = L"main";
 
     WNDCLASS wc = { };
+    pdata.filled = 1;
+    pdata.origionator = "WXR";
+    pdata.alert = "TOR";
+    pdata.counties = "081376-081353-081324-234523-232542-3279yt7hgbihjb9442352-33";
+    pdata.time = "+0015";
+    pdata.timestart = "1231212";
+    pdata.csig = "12345678";
+    pdata.attntype = 1;
+    pdata.attntime = 8;
+    pdata.initialdelay = 0;
+    pdata.attndelay = 3;
+    pdata.eomdelay = 1;
+    pdata.afteomdelay = 1;
 
     wc.lpfnWndProc = WindowProc;
     wc.hInstance = hInstance;
@@ -113,12 +162,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
     HWND hwnd = CreateWindowEx( 0, CLASS_NAME, L"vuytr",
         WS_OVERLAPPED | WS_MINIMIZEBOX | WS_MAXIMIZE | WS_CAPTION | WS_SYSMENU,
         CW_USEDEFAULT, CW_USEDEFAULT, 600, 300, NULL, NULL, hInstance, pState);
-    CreateButtons(hwnd);
-    if (hwnd == NULL || pState == NULL)
-    {
-        return 0;
-    }
-
+    CreateControls(hwnd);
     ShowWindow(hwnd, nCmdShow);
 
     // Run the message loop.
