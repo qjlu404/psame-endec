@@ -2,6 +2,7 @@
 #include "encoder.h"
 using std::ofstream;
 using std::string;
+vector<float>* pcm;
 void save(vector<float>& pcm, string fname)
 {
 	AudioFile<float> audioFile;
@@ -119,7 +120,8 @@ inline void attnb(vector<float>* Vectorptr, int time)
 			i++;
 		}
 	}
-void Encoder::encode(string alert, bool attn, int attntime, int delaybeforetone, int delaybefore, int delayafter, int delayend)
+void encode(string alert, bool attn, int attntime, int delaybeforetone,
+			int delaybefore, int delayafter, int delayend)
 {
 	vector<bool> binarydata;
 	vector<bool> EOM = {
@@ -143,7 +145,7 @@ void Encoder::encode(string alert, bool attn, int attntime, int delaybeforetone,
 		1,0,1,0,1,0,1,1,
 		1,0,1,0,1,0,1,1
 	};
-	vector<float> pcm;
+	pcm = new vector<float>();
 	bool peepchoice;
 	if (alert.size() % 2 != 0)
 		peepchoice = 0;
@@ -152,67 +154,76 @@ void Encoder::encode(string alert, bool attn, int attntime, int delaybeforetone,
 	unsigned int pl = (unsigned int)(alert.size() / 3);
 
 	//char to binary and stuff
-	delay(&pcm, delaybeforetone);
+	delay(pcm, delaybeforetone);
 	chartobinary(&binarydata, alert);
 	//main tones
 	if (peepchoice)
-		effect(&pcm, pl, peepchoice);
-	addwave(&pcm, preamble);
-	addwave(&pcm, binarydata);
-	effect(&pcm, pl, peepchoice);
+		effect(pcm, pl, peepchoice);
+	addwave(pcm, preamble);
+	addwave(pcm, binarydata);
+	effect(pcm, pl, peepchoice);
 
-	delay(&pcm, 1);
-
-	if (peepchoice)
-		effect(&pcm, pl, peepchoice);
-	addwave(&pcm, preamble);
-	addwave(&pcm, binarydata);
-	effect(&pcm, pl, peepchoice);
-
-	delay(&pcm, 1);
+	delay(pcm, 1);
 
 	if (peepchoice)
-		effect(&pcm, pl, peepchoice);
-	addwave(&pcm, preamble);
-	addwave(&pcm, binarydata);
-	effect(&pcm, pl, peepchoice);
+		effect(pcm, pl, peepchoice);
+	addwave(pcm, preamble);
+	addwave(pcm, binarydata);
+	effect(pcm, pl, peepchoice);
+
+	delay(pcm, 1);
+
+	if (peepchoice)
+		effect(pcm, pl, peepchoice);
+	addwave(pcm, preamble);
+	addwave(pcm, binarydata);
+	effect(pcm, pl, peepchoice);
 	//tone and msg
-	delay(&pcm, delaybefore);
+	delay(pcm, delaybefore);
 	if (attn)
 	{
-		attna(&pcm, attntime);
+		attna(pcm, attntime);
 	}
 	else
 	{
-		attnb(&pcm, attntime);
+		attnb(pcm, attntime);
 	}
-	delay(&pcm, delayafter);
+	delay(pcm, delayafter);
 	//eom
 	if (peepchoice)
-		effect(&pcm, pl, peepchoice);
-	addwave(&pcm, preamble);
-	addwave(&pcm, EOM);
-	effect(&pcm, pl, peepchoice);
+		effect(pcm, pl, peepchoice);
+	addwave(pcm, preamble);
+	addwave(pcm, EOM);
+	effect(pcm, pl, peepchoice);
 
-	delay(&pcm, 1);
-
-	if (peepchoice)
-		effect(&pcm, pl, peepchoice);
-	addwave(&pcm, preamble);
-	addwave(&pcm, EOM);
-	effect(&pcm, pl, peepchoice);
-
-	delay(&pcm, 1);
+	delay(pcm, 1);
 
 	if (peepchoice)
-		effect(&pcm, pl, peepchoice);
-	addwave(&pcm, preamble);
-	addwave(&pcm, EOM);
-	effect(&pcm, pl, peepchoice);
+		effect(pcm, pl, peepchoice);
+	addwave(pcm, preamble);
+	addwave(pcm, EOM);
+	effect(pcm, pl, peepchoice);
 
-	delay(&pcm, 1);
+	delay(pcm, 1);
+
+	if (peepchoice)
+		effect(pcm, pl, peepchoice);
+	addwave(pcm, preamble);
+	addwave(pcm, EOM);
+	effect(pcm, pl, peepchoice);
+
+	delay(pcm, 1);
 	//decoder a;
 	//a.phasesync(pcm);
 
-	save(pcm, "pcm.wav");
+	save(*pcm, "pcm.wav");
+}
+extern "C" ENCODER void ReturnIntegerArray(float** ppIntegerArrayReceiver, int* iSizeReceiver)
+{
+	*iSizeReceiver = pcm->size();
+	*ppIntegerArrayReceiver = (float*)::CoTaskMemAlloc(sizeof(float) * pcm->size());
+	for (size_t i = 0; i < pcm->size(); i++)
+	{
+		(*ppIntegerArrayReceiver)[i] = (*pcm)[i];
+	}
 }
