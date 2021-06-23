@@ -1,9 +1,9 @@
 #pragma once
 #include "pch.h"
 #ifdef ENCODER_EXPORTS
-#define ENCODER __declspec(dllexport)
+#define EXPORT extern "C" __declspec(dllexport)
 #else
-#define ENCODER __declspec(dllimport)
+#define EXPORT __declspec(dllimport)
 #endif
 #ifndef M_PI
 #define M_PI 3.1415926535
@@ -17,10 +17,12 @@ double PER_BIT = 0.00192;
 double PER_SAMPLE = 1 / SAMPLE_RATE;
 using std::vector;
 using std::size_t;
-	void chartobinary(vector<bool>* Vectorptr, string c);
-	inline int addwave(vector<float>* Vectorptr, vector<bool>& invect);
-	inline void delay(vector<float>* Vectorptr, int delay);
-	inline void effect(vector<float>* Vectorptr, unsigned int times, bool hilo);
-	inline void attna(vector<float>* Vectorptr, int time);
-	inline void attnb(vector<float>* Vectorptr, int time);
-	void encode(std::string alert, bool attn, int attntime, int delaybeforetone, int delaybefore, int delayafter, int delayend);
+EXPORT void chartobinary(vector<bool>* Vectorptr, std::string c);
+EXPORT inline int addwave(vector<float>* Vectorptr, vector<bool>& invect);
+EXPORT inline void delay(vector<float>* Vectorptr, int delay);
+EXPORT inline void effect(vector<float>* Vectorptr, unsigned int times, bool hilo);
+EXPORT inline void attna(vector<float>* Vectorptr, int time);
+EXPORT inline void attnb(vector<float>* Vectorptr, int time);
+EXPORT void encode(std::string alert, bool attn, int attntime, int delaybeforetone, int delaybefore, int delayafter, int delayend);
+EXPORT void encodebin(bool alert[], bool attn, int attntime, int delaybeforetone, int delaybefore, int delayafter, int delayend);
+EXPORT void ezencodebin(bool alert[], bool pream[], bool eom[]);

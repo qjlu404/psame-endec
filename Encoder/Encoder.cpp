@@ -14,6 +14,7 @@ void save(vector<float>& pcm, string fname)
 	bool ok = audioFile.setAudioBuffer(buffer);
 	audioFile.save(fname);
 }
+
 void chartobinary(vector<bool>* Vectorptr, string c)
 	{
 		for (int i = 0; i < c.size() - 1; i++)
@@ -35,6 +36,7 @@ void chartobinary(vector<bool>* Vectorptr, string c)
 			}
 		}
 	}
+
 inline int addwave(vector<float>* Vectorptr, vector<bool>& invect)
 	{
 
@@ -61,6 +63,7 @@ inline int addwave(vector<float>* Vectorptr, vector<bool>& invect)
 		}
 		return 0;
 	}
+
 inline void delay(vector<float>* Vectorptr, int delay)
 	{
 		double i = 0;
@@ -72,6 +75,7 @@ inline void delay(vector<float>* Vectorptr, int delay)
 			j++;
 		}
 	}
+
 inline void effect(vector<float>* Vectorptr, unsigned int times, bool hilo)
 	{
 		unsigned int j = 0;
@@ -98,6 +102,7 @@ inline void effect(vector<float>* Vectorptr, unsigned int times, bool hilo)
 			j++;
 		}
 	}
+
 inline void attna(vector<float>* Vectorptr, int time)
 	{
 		int i = 0;
@@ -109,6 +114,7 @@ inline void attna(vector<float>* Vectorptr, int time)
 			i++;
 		}
 	}
+
 inline void attnb(vector<float>* Vectorptr, int time)
 	{
 		double j = 0;
@@ -120,6 +126,7 @@ inline void attnb(vector<float>* Vectorptr, int time)
 			i++;
 		}
 	}
+
 void encode(string alert, bool attn, int attntime, int delaybeforetone,
 			int delaybefore, int delayafter, int delayend)
 {
@@ -217,13 +224,93 @@ void encode(string alert, bool attn, int attntime, int delaybeforetone,
 	//a.phasesync(pcm);
 
 	save(*pcm, "pcm.wav");
+	delete pcm;
 }
-extern "C" ENCODER void ReturnIntegerArray(float** ppIntegerArrayReceiver, int* iSizeReceiver)
+
+void encodebin(bool alert[], bool pream[], bool eom[], bool attn, int attntime,
+			   int delaybeforetone, int delaybefore, int delayafter, int delayend)
 {
-	*iSizeReceiver = pcm->size();
-	*ppIntegerArrayReceiver = (float*)::CoTaskMemAlloc(sizeof(float) * pcm->size());
-	for (size_t i = 0; i < pcm->size(); i++)
+	vector<bool> binarydata;
+	vector<bool> EOM;
+	vector<bool> preamble;
+	binarydata.assign(sizeof(alert), alert);
+	preamble.assign(sizeof(pream), pream);
+	EOM.assign(sizeof(eom), eom);
+	pcm = new vector<float>();
+	bool pc;
+	if (binarydata.size() % 2 != 0)
+		pc = 0;
+	else
+		pc = 1;
+	unsigned int pl = (unsigned int)(binarydata.size() / 24);
+
+	//char to binary and stuff
+	delay(pcm, delaybeforetone);
+	//main tones
+	if (pc)
+		effect(pcm, pl, pc);
+	addwave(pcm, preamble);
+	addwave(pcm, binarydata);
+	effect(pcm, pl, pc);
+
+	delay(pcm, 1);
+
+	if (pc)
+		effect(pcm, pl, pc);
+	addwave(pcm, preamble);
+	addwave(pcm, binarydata);
+	effect(pcm, pl, pc);
+
+	delay(pcm, 1);
+
+	if (pc)
+		effect(pcm, pl, pc);
+	addwave(pcm, preamble);
+	addwave(pcm, binarydata);
+	effect(pcm, pl, pc);
+	//tone and msg
+	delay(pcm, delaybefore);
+	if (attn)
 	{
-		(*ppIntegerArrayReceiver)[i] = (*pcm)[i];
+		attna(pcm, attntime);
 	}
+	else
+	{
+		attnb(pcm, attntime);
+	}
+	delay(pcm, delayafter);
+	//eom
+	if (pc)
+		effect(pcm, pl, pc);
+	addwave(pcm, preamble);
+	addwave(pcm, EOM);
+	effect(pcm, pl, pc);
+
+	delay(pcm, 1);
+
+	if (pc)
+		effect(pcm, pl, pc);
+	addwave(pcm, preamble);
+	addwave(pcm, EOM);
+	effect(pcm, pl, pc);
+
+	delay(pcm, 1);
+
+	if (pc)
+		effect(pcm, pl, pc);
+	addwave(pcm, preamble);
+	addwave(pcm, EOM);
+	effect(pcm, pl, pc);
+
+	delay(pcm, 1);
+	//decoder a;
+	//a.phasesync(pcm);
+
+	save(*pcm, "pcm.wav");
+	delete pcm;
+}
+
+void ezencodebin(bool alert[], bool pream[], bool eom[])
+{
+	encodebin(alert, pream, eom, true, 1, 8, 3, 1, 1);
 }
