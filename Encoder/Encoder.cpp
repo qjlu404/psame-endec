@@ -1,316 +1,202 @@
 #include "pch.h"
+#include <vector>
 #include "encoder.h"
 using std::ofstream;
 using std::string;
-vector<float>* pcm;
-void save(vector<float>& pcm, string fname)
+void Encoder::binaryConvert()
+{
+	std::cout << "\n\n*Begin BinaryConvert\n\n";
+	string output;
+	for (int i = 0; i < c.size(); i++)
+	{
+		output.append(std::bitset<8>(c[i]).to_string());
+	}
+
+	std::cout << "* finished char to binary conversion." << std::endl;
+	std::cout << "*  input: " << c << std::endl;
+	std::cout << "* output string: " << output << std::endl;
+	std::cout << "* output bin   : ";
+	for (size_t i = 0; i < output.size(); i++)
+	{
+		char t[1];
+		t[0] = output[i];
+		int u = std::stoi(t);
+		if (u == 1)
+		{
+			bin.push_back(1);
+		}
+		else
+		{
+			bin.push_back(0);
+		}
+	}
+	std::cout << "\n\n*End of BinaryConvert\n\n";
+}
+void Encoder::save()
 {
 	AudioFile<float> audioFile;
 	AudioFile<float>::AudioBuffer buffer;
 	buffer.resize(1);
-	buffer[0] = pcm;
-	audioFile.setSampleRate(SAMPLE_RATE);
+	buffer[0] = signalPCM;
+	audioFile.setSampleRate(samplerate);
 	audioFile.setNumChannels(1);
-	bool ok = audioFile.setAudioBuffer(buffer);
-	audioFile.save(fname);
+	int ok = audioFile.setAudioBuffer(buffer);
+	if (ok)
+	{
+		std::cout << "\n*audioFile.setAudioBuffer returned code: " << ok << std::endl;
+	}
+	audioFile.save("pcm.wav");
 }
-
-void chartobinary(vector<bool>* Vectorptr, string c)
-	{
-		for (int i = 0; i < c.size() - 1; i++)
-		{
-			string output;
-			output.append(std::bitset<8>(c[i] & 0x7f).to_string());;
-
-			for (size_t j = 0; j <= output.size(); j++)
-			{
-				if (output[j] == '1')
-				{
-					Vectorptr->push_back(true);
-				}
-				else
-				{
-					Vectorptr->push_back(false);
-				}
-
-			}
-		}
-	}
-
-inline int addwave(vector<float>* Vectorptr, vector<bool>& invect)
-	{
-
-		for (size_t j = 0; j < invect.size(); j++)
-		{
-			if (invect[j] == true)
-			{
-				double i = 0;
-				while (i <= PER_BIT)
-				{
-					Vectorptr->push_back((AMPLITUDE)*sin(2 * M_PI * ((double)BAUD * 4) * i + 0));
-					i += PER_SAMPLE;
-				}
-			}
-			else
-			{
-				double i = 0;
-				while (i <= PER_BIT)
-				{
-					Vectorptr->push_back((AMPLITUDE)*sin(2 * M_PI * ((double)BAUD * 3) * i + 0));
-					i += PER_SAMPLE;
-				}
-			}
-		}
-		return 0;
-	}
-
-inline void delay(vector<float>* Vectorptr, int delay)
-	{
-		double i = 0;
-		unsigned long long int j = 1;
-		while (j <= (double)SAMPLE_RATE * delay)
-		{
-			Vectorptr->push_back(0);//(AMPLITUDE / 32) * sin(2 * M_PI * ((rand() % time(NULL))) * i + 0));
-			i += 0.00001041666;
-			j++;
-		}
-	}
-
-inline void effect(vector<float>* Vectorptr, unsigned int times, bool hilo)
-	{
-		unsigned int j = 0;
-		while (j <= times)
-		{
-			if (hilo)
-			{
-				double i = 0;
-				while (i <= PER_BIT)
-				{
-					Vectorptr->push_back((AMPLITUDE)*sin(2 * M_PI * ((double)BAUD * 4) * i + 0));
-					i += PER_SAMPLE;
-				}
-			}
-			else
-			{
-				double i = 0;
-				while (i <= PER_BIT)
-				{
-					Vectorptr->push_back((AMPLITUDE)*sin(2 * M_PI * ((double)BAUD * 3) * i + 0));
-					i += PER_SAMPLE;
-				}
-			}
-			j++;
-		}
-	}
-
-inline void attna(vector<float>* Vectorptr, int time)
-	{
-		int i = 0;
-		double j = 0;
-		while (i <= SAMPLE_RATE * time)
-		{
-			Vectorptr->push_back(((AMPLITUDE / 2) * sin(2 * M_PI * (853) * j + 0)) + ((AMPLITUDE / 2) * sin(2 * M_PI * (960) * j + 0)));
-			j += PER_SAMPLE;
-			i++;
-		}
-	}
-
-inline void attnb(vector<float>* Vectorptr, int time)
-	{
-		double j = 0;
-		int i = 0;
-		while (i <= SAMPLE_RATE * time)
-		{
-			Vectorptr->push_back(AMPLITUDE * sin(2 * M_PI * 1050 * j + 0));
-			j += PER_SAMPLE;
-			i++;
-		}
-	}
-
-void encode(string alert, bool attn, int attntime, int delaybeforetone,
-			int delaybefore, int delayafter, int delayend)
+void Encoder::printStatus()
 {
-	vector<bool> binarydata;
-	vector<bool> EOM = {
-	0,1,0,0,1,1,1,0,0,1,0,0,1,1,1,0,0,1,0,0,1,1,1,0,0,1,0,0,1,1,1,0,
-	};
-	vector<bool> preamble = {
-		1,0,1,0,1,0,1,1,
-		1,0,1,0,1,0,1,1,
-		1,0,1,0,1,0,1,1,
-		1,0,1,0,1,0,1,1,
-		1,0,1,0,1,0,1,1,
-		1,0,1,0,1,0,1,1,
-		1,0,1,0,1,0,1,1,
-		1,0,1,0,1,0,1,1,
-		1,0,1,0,1,0,1,1,
-		1,0,1,0,1,0,1,1,
-		1,0,1,0,1,0,1,1,
-		1,0,1,0,1,0,1,1,
-		1,0,1,0,1,0,1,1,
-		1,0,1,0,1,0,1,1,
-		1,0,1,0,1,0,1,1,
-		1,0,1,0,1,0,1,1
-	};
-	pcm = new vector<float>();
-	bool peepchoice;
-	if (alert.size() % 2 != 0)
-		peepchoice = 0;
-	else
-		peepchoice = 1;
-	unsigned int pl = (unsigned int)(alert.size() / 3);
-
-	//char to binary and stuff
-	delay(pcm, delaybeforetone);
-	chartobinary(&binarydata, alert);
-	//main tones
-	if (peepchoice)
-		effect(pcm, pl, peepchoice);
-	addwave(pcm, preamble);
-	addwave(pcm, binarydata);
-	effect(pcm, pl, peepchoice);
-
-	delay(pcm, 1);
-
-	if (peepchoice)
-		effect(pcm, pl, peepchoice);
-	addwave(pcm, preamble);
-	addwave(pcm, binarydata);
-	effect(pcm, pl, peepchoice);
-
-	delay(pcm, 1);
-
-	if (peepchoice)
-		effect(pcm, pl, peepchoice);
-	addwave(pcm, preamble);
-	addwave(pcm, binarydata);
-	effect(pcm, pl, peepchoice);
-	//tone and msg
-	delay(pcm, delaybefore);
-	if (attn)
+	std::cout << "\n\n****PrintStatus****\n\n";
+	std::cout << "Current message string: " << c << std::endl;
+	std::cout << "Bin Data: ";
+	for (size_t i = 0; i < bin.size(); i++)
 	{
-		attna(pcm, attntime);
+		std::cout << bin[i];
 	}
-	else
-	{
-		attnb(pcm, attntime);
-	}
-	delay(pcm, delayafter);
-	//eom
-	if (peepchoice)
-		effect(pcm, pl, peepchoice);
-	addwave(pcm, preamble);
-	addwave(pcm, EOM);
-	effect(pcm, pl, peepchoice);
-
-	delay(pcm, 1);
-
-	if (peepchoice)
-		effect(pcm, pl, peepchoice);
-	addwave(pcm, preamble);
-	addwave(pcm, EOM);
-	effect(pcm, pl, peepchoice);
-
-	delay(pcm, 1);
-
-	if (peepchoice)
-		effect(pcm, pl, peepchoice);
-	addwave(pcm, preamble);
-	addwave(pcm, EOM);
-	effect(pcm, pl, peepchoice);
-
-	delay(pcm, 1);
-	//decoder a;
-	//a.phasesync(pcm);
-
-	save(*pcm, "pcm.wav");
-	delete pcm;
+	std::cout << "\n\n****End****\n\n";
 }
-
-void encodebin(bool alert[], bool pream[], bool eom[], bool attn, int attntime,
-			   int delaybeforetone, int delaybefore, int delayafter, int delayend)
+Encoder::Encoder()
 {
-	vector<bool> binarydata;
-	vector<bool> EOM;
-	vector<bool> preamble;
-	binarydata.assign(sizeof(alert), alert);
-	preamble.assign(sizeof(pream), pream);
-	EOM.assign(sizeof(eom), eom);
-	pcm = new vector<float>();
-	bool pc;
-	if (binarydata.size() % 2 != 0)
-		pc = 0;
-	else
-		pc = 1;
-	unsigned int pl = (unsigned int)(binarydata.size() / 24);
 
-	//char to binary and stuff
-	delay(pcm, delaybeforetone);
-	//main tones
-	if (pc)
-		effect(pcm, pl, pc);
-	addwave(pcm, preamble);
-	addwave(pcm, binarydata);
-	effect(pcm, pl, pc);
-
-	delay(pcm, 1);
-
-	if (pc)
-		effect(pcm, pl, pc);
-	addwave(pcm, preamble);
-	addwave(pcm, binarydata);
-	effect(pcm, pl, pc);
-
-	delay(pcm, 1);
-
-	if (pc)
-		effect(pcm, pl, pc);
-	addwave(pcm, preamble);
-	addwave(pcm, binarydata);
-	effect(pcm, pl, pc);
-	//tone and msg
-	delay(pcm, delaybefore);
-	if (attn)
-	{
-		attna(pcm, attntime);
-	}
-	else
-	{
-		attnb(pcm, attntime);
-	}
-	delay(pcm, delayafter);
-	//eom
-	if (pc)
-		effect(pcm, pl, pc);
-	addwave(pcm, preamble);
-	addwave(pcm, EOM);
-	effect(pcm, pl, pc);
-
-	delay(pcm, 1);
-
-	if (pc)
-		effect(pcm, pl, pc);
-	addwave(pcm, preamble);
-	addwave(pcm, EOM);
-	effect(pcm, pl, pc);
-
-	delay(pcm, 1);
-
-	if (pc)
-		effect(pcm, pl, pc);
-	addwave(pcm, preamble);
-	addwave(pcm, EOM);
-	effect(pcm, pl, pc);
-
-	delay(pcm, 1);
-	//decoder a;
-	//a.phasesync(pcm);
-
-	save(*pcm, "pcm.wav");
-	delete pcm;
+	std::cout << "\n* Initializing variables" << std::endl;
+	amplitude = 1;
+	samplerate = 9600;
+	baud = 5.0 / 6.0 + 520.0;
+	attntype = 1;
+	attntime = 1;
+	delay1 = 1;
+	delay2 = 1;
+	delay3 = 1;
+	delay4 = 1;
+	wave0 = vector<float>();
+	wave1 = vector<float>();
+	effect = vector<float>();
+	delay = vector<float>();
+	attnAM = vector<float>();
+	attnNWS = vector<float>();
+	signalPCM = vector<float>();
+	DebugSignalInput = vector<int>();
+	for (int i = 0; i<samplerate/baud;i++)
+		{
+			wave1.push_back(amplitude * sin(2 * M_PI * (baud * 4) * (i/ samplerate) + 0));
+			wave0.push_back(amplitude * sin(2 * M_PI * (baud * 3) * (i / samplerate) + 0));
+			effect.push_back(amplitude * sin(2 * M_PI * (baud * 4) * (i / samplerate) + 0));
+		}
+	for (int i = 0; i < samplerate; i++)
+		{
+			delay.push_back(0);
+			attnAM.push_back(amplitude * sin(2 * M_PI * (853) * (i / samplerate) + 0)
+						   + amplitude * sin(2 * M_PI * (960) * (i / samplerate) + 0));
+			attnNWS.push_back(amplitude * sin(2 * M_PI * (1050) * (i / samplerate) + 0));
+		}
+	c = "\xab\xab\xab\xab\xab\xab\xab\xab\xab\xab\xab\xab\xab\xab\xab\xab";
+	binaryConvert();
+	std::cout << "\n* Done Initializing variables" << std::endl;
 }
-
-void ezencodebin(bool alert[], bool pream[], bool eom[])
+void Encoder::getPCM(vector<float>* output)
 {
-	encodebin(alert, pream, eom, true, 1, 8, 3, 1, 1);
+	for (size_t i = 0; i < signalPCM.size(); i++)
+	{
+		output->push_back(signalPCM[i]);
+	}
+}
+void Encoder::Generate(string message)
+{
+	std::cout << "\n\n*Begin Generate\n\n";
+	c.clear();
+	c = message;
+	delay1 = 3;
+	delay2 = 1;
+	delay3 = 1;
+	delay4 = 1;
+	binaryConvert();
+	printStatus();
+	//generate blank delay for 1 second * i
+	for (int i = 0; i < delay1; i++)
+	{
+		addWave(delay);
+	}
+	printStatus();
+	//read binary data and generate wave PCM
+	std::cout << "* Debug Signal Output: ";
+	for (int i = 0; i < 3; i++)
+	{
+		for (int j = 0; j < bin.size(); j++)
+		{
+			if (bin[j] == 1)
+			{
+				addWave(wave1);
+				std::cout << '1';
+			}
+			if (bin[j] == 0)
+			{
+				addWave(wave0);
+				std::cout << '0';
+			}
+		}
+		addWave(effect);
+		addWave(delay);
+	}
+	std::cout << std::endl;
+	for (int i = 0; i < delay2; i++)
+	{
+		addWave(delay);
+	}
+	for (int i = 0; i < attntime; i++)
+	{
+		if (attntype)
+		{
+			addWave(attnAM);
+		}
+		if (!attntype)
+		{
+			addWave(attnNWS);
+		}
+	}
+	for (int i = 0; i < delay3; i++)
+	{
+		addWave(delay);
+	}
+
+	c.clear();
+	bin.clear();
+	c = "\xab\xab\xab\xab\xab\xab\xab\xab\xab\xab\xab\xab\xab\xab\xab\xabNNNN";
+	binaryConvert();
+	std::cout << "*EOM Bin Debug: ";
+	for (int i = 0; i < 3; i++)
+	{
+		for (int j = 0; j < bin.size(); j++)
+		{
+			if (bin[j] == 1)
+			{
+				addWave(wave1);
+				std::cout << '1';
+			}
+			if (bin[j] == 0)
+			{
+				addWave(wave0);
+				std::cout << '0';
+			}
+		}
+		addWave(effect);
+		addWave(delay);
+	}
+	std::cout << std::endl;
+	for (int i = 0; i < delay4; i++)
+	{
+		addWave(delay);
+	}
+
+	save();
+	std::cout << "\n\nEnd Generate\n\n";
+}
+void Encoder::addWave(vector<float>& _in)
+{
+	for (size_t i = 0; i < _in.size(); i++)
+	{
+		signalPCM.push_back(_in[i]);
+	}
 }
