@@ -20,6 +20,7 @@ class EXPORT Encoder
 	vector<float> wave0, wave1, effect, delay, attnAM, attnNWS, signalPCM, Preamble;
 	vector<int> DebugSignalInput;
 	string c;
+	void reverseStr(string& str);
 	virtual void binaryConvert();
 	virtual void save();
 	virtual void addWave(vector<float>& _in);

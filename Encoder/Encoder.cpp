@@ -3,13 +3,26 @@
 #include "encoder.h"
 using std::ofstream;
 using std::string;
+void Encoder::reverseStr(string & str)
+{
+	// Thanks to geeksforgeeks.com for providing this function
+	int n = str.length();
+
+	// Swap character starting from two
+	// corners
+	for (int i = 0; i < n / 2; i++)
+		std::swap(str[i], str[n - i - 1]);
+}
 void Encoder::binaryConvert()
 {
 	std::cout << "\n\n*Begin BinaryConvert\n\n";
 	string output;
 	for (int i = 0; i < c.size(); i++)
 	{
-		output.append(std::bitset<8>(c[i]).to_string());
+		string t;
+		t.append(std::bitset<8>(c[i]).to_string());
+		reverseStr(t);
+		output.append(t);
 	}
 
 	std::cout << "* finished char to binary conversion." << std::endl;
@@ -63,7 +76,7 @@ Encoder::Encoder()
 
 	std::cout << "\n* Initializing variables" << std::endl;
 	amplitude = 1;
-	samplerate = 9600;
+	samplerate = 44100;
 	baud = 5.0 / 6.0 + 520.0;
 	attntype = 1;
 	attntime = 1;
