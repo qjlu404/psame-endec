@@ -62,6 +62,7 @@ void Encoder::save()
 }
 void Encoder::printStatus()
 {
+#ifdef _DEBUG
 	std::cout << "\n\n****PrintStatus****\n\n";
 	std::cout << "Current message string: " << c << std::endl;
 	std::cout << "Bin Data: ";
@@ -70,6 +71,7 @@ void Encoder::printStatus()
 		std::cout << bin[i];
 	}
 	std::cout << "\n\n****End****\n\n";
+#endif // DEBUG
 }
 Encoder::Encoder()
 {
@@ -93,18 +95,18 @@ Encoder::Encoder()
 	signalPCM = vector<float>();
 	DebugSignalInput = vector<int>();
 	for (int i = 0; i<samplerate/baud;i++)
-		{
-			wave1.push_back(amplitude * sin(2 * M_PI * (baud * 4) * (i/ samplerate) + 0));
-			wave0.push_back(amplitude * sin(2 * M_PI * (baud * 3) * (i / samplerate) + 0));
-			effect.push_back(amplitude * sin(2 * M_PI * (baud * 4) * (i / samplerate) + 0));
-		}
+	{
+		wave1.push_back(amplitude * sin(2 * M_PI * (baud * 4) * (i/ samplerate) + 0));
+		wave0.push_back(amplitude * sin(2 * M_PI * (baud * 3) * (i / samplerate) + 0));
+		effect.push_back(amplitude * sin(2 * M_PI * (baud * 4) * (i / samplerate) + 0));
+	}
 	for (int i = 0; i < samplerate; i++)
-		{
-			delay.push_back(0);
-			attnAM.push_back(amplitude * sin(2 * M_PI * (853) * (i / samplerate) + 0)
-						   + amplitude * sin(2 * M_PI * (960) * (i / samplerate) + 0));
-			attnNWS.push_back(amplitude * sin(2 * M_PI * (1050) * (i / samplerate) + 0));
-		}
+	{
+		delay.push_back(0);
+		attnAM.push_back(amplitude * sin(2 * M_PI * (853) * (i / samplerate) + 0)
+					   + amplitude * sin(2 * M_PI * (960) * (i / samplerate) + 0));
+		attnNWS.push_back(amplitude * sin(2 * M_PI * (1050) * (i / samplerate) + 0));
+	}
 	c = "\xab\xab\xab\xab\xab\xab\xab\xab\xab\xab\xab\xab\xab\xab\xab\xab";
 	binaryConvert();
 	std::cout << "\n* Done Initializing variables" << std::endl;

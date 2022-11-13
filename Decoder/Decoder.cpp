@@ -4,22 +4,44 @@ using std::vector;
 using std::size_t;
 Decoder::Decoder()
 {
-	Amplitude = 32767;
-	SampleRate = 96000;
-	baud = 520 + 5 / 6;
-	bitime = 0.00192;
-	speriod = 1 / SampleRate;
+	amplitude = 100000;
+	samplerate = 44100;
+	baud = 520.0 + 5.0 / 6.0;
 }
-
-void Decoder::fft(std::vector<float>& signal)
+void Decoder::Test(std::vector<float> _in)
 {
-	size_t samples = signal.size();
-	vector<double> ccs;
-	for (size_t i = 0; i < samples; i++)
+	std::vector<float> qsignal1;
+	std::vector<float> isignal1;
+	std::vector<float> qsignal0;
+	std::vector<float> isignal0;
+	for (size_t i = 0; i < samplerate/baud; i++)
 	{
-		ccs.push_back(cos(((2 * M_PI) / samples) * signal[i]));
+		qsignal1.push_back(amplitude * sin(2 * M_PI * (baud * 4) * (i / samplerate) + 0));
+		qsignal0.push_back(amplitude * sin(2 * M_PI * (baud * 3) * (i / samplerate) + 0));
+		isignal1.push_back(amplitude * cos(2 * M_PI * (baud * 4) * (i / samplerate) + 0));
+		isignal0.push_back(amplitude * cos(2 * M_PI * (baud * 3) * (i / samplerate) + 0));
 	}
-}
-void Decoder::phasesync(std::vector<float>& signal)
-{
+	std::vector<float> DCQ1;
+	std::vector<float> DCI1;
+	std::vector<float> DCQ0;
+	std::vector<float> DCI0;
+	float q1mean = 0.0;
+	float i1mean = 0.0;
+	float q0mean = 0.0;
+	float i0mean = 0.0;
+	for (size_t i = 0; i < samplerate/baud; i++)
+	{
+		DCQ1.push_back(_in[i] * qsignal1[i]);
+		q1mean += _in[i] * qsignal1[i];
+		DCI1.push_back(_in[i] * isignal1[i]);
+		i1mean += _in[i] * isignal1[i];
+		DCQ0.push_back(_in[i] * qsignal0[i]);
+		q0mean += _in[i] * qsignal0[i];
+		DCI0.push_back(_in[i] * isignal0[i]);
+		i0mean += _in[i] * isignal0[i];
+	}
+	float zerooffset = ((i0mean / DCI0.size()) + (q0mean / DCQ0.size()))/2;
+	std::cout << "Zero Offset: " << zerooffset << std::endl;
+	float oneoffset = ((i1mean / DCI1.size()) + (q1mean / DCQ1.size()))/2;
+	std::cout << "One Offset : " << oneoffset << std::endl;
 }

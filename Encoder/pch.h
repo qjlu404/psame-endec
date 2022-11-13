@@ -9,7 +9,7 @@
 #define NOMINMAX
 // add headers that you want to pre-compile here
 #include "framework.h"
-#include "AudioFile/AudioFile.h"
+#include "AudioFile.h"
 #include <fstream>
 #include <bitset>
 #include <iostream>

@@ -11,12 +11,9 @@
 extern "C" class DECODER Decoder
 {
 public:
-    double Amplitude;
-    double SampleRate;
-    double baud;
-    double bitime;
-    double speriod;
+    float amplitude;
+    float samplerate;
+    float baud;
     Decoder();
-    virtual void fft(std::vector<float>& signal);
-    virtual void phasesync(std::vector<float >& signal);
+    virtual void Test(std::vector<float> _in);
 };
