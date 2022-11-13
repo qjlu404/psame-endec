@@ -15,7 +15,9 @@ void Encoder::reverseStr(string & str)
 }
 void Encoder::binaryConvert()
 {
+#ifdef _DEBUG
 	std::cout << "\n\n*Begin BinaryConvert\n\n";
+#endif
 	string output;
 	for (int i = 0; i < c.size(); i++)
 	{
@@ -24,11 +26,12 @@ void Encoder::binaryConvert()
 		reverseStr(t);
 		output.append(t);
 	}
-
+#ifdef _DEBUG
 	std::cout << "* finished char to binary conversion." << std::endl;
 	std::cout << "*  input: " << c << std::endl;
 	std::cout << "* output string: " << output << std::endl;
 	std::cout << "* output bin   : ";
+#endif
 	for (size_t i = 0; i < output.size(); i++)
 	{
 		char t[1];
@@ -43,7 +46,9 @@ void Encoder::binaryConvert()
 			bin.push_back(0);
 		}
 	}
+#ifdef _DEBUG
 	std::cout << "\n\n*End of BinaryConvert\n\n";
+#endif
 }
 void Encoder::save()
 {
@@ -54,7 +59,7 @@ void Encoder::save()
 	audioFile.setSampleRate(samplerate);
 	audioFile.setNumChannels(1);
 	int ok = audioFile.setAudioBuffer(buffer);
-	if (ok)
+	if (!ok)
 	{
 		std::cout << "\n*audioFile.setAudioBuffer returned code: " << ok << std::endl;
 	}
@@ -75,8 +80,9 @@ void Encoder::printStatus()
 }
 Encoder::Encoder()
 {
-
+#ifdef _DEBUG
 	std::cout << "\n* Initializing variables" << std::endl;
+#endif
 	amplitude = 1;
 	samplerate = 44100;
 	baud = 5.0 / 6.0 + 520.0;
@@ -109,7 +115,9 @@ Encoder::Encoder()
 	}
 	c = "\xab\xab\xab\xab\xab\xab\xab\xab\xab\xab\xab\xab\xab\xab\xab\xab";
 	binaryConvert();
+#ifdef _DEBUG
 	std::cout << "\n* Done Initializing variables" << std::endl;
+#endif
 }
 void Encoder::getPCM(vector<float>* output)
 {
@@ -120,7 +128,9 @@ void Encoder::getPCM(vector<float>* output)
 }
 void Encoder::Generate(string message)
 {
+#ifdef _DEBUG
 	std::cout << "\n\n*Begin Generate\n\n";
+#endif
 	c.clear();
 	c = message;
 	delay1 = 3;
@@ -136,22 +146,51 @@ void Encoder::Generate(string message)
 	}
 	printStatus();
 	//read binary data and generate wave PCM
+#ifdef _DEBUG
 	std::cout << "* Debug Signal Output: ";
+#endif
 	for (int i = 0; i < 3; i++)
 	{
+		// 8 times easier to just do this
+		// why even go through the trouble of creating an
+		// entire for loop when I can just copy and paste (lightbulb[not tryna ruin my progress with unocode])
+		// it's 10:20 pm as I'm writing this entry
+		/*(shoulda used these a long time ago)
+		  and in this current circumstance, physical effort feels a lot
+		  easier than mental effort.
+		  as long as it works like i intend its all good*/
+		addWave(effect);
+		addWave(effect);
+		addWave(effect);
+		addWave(effect);
+		addWave(effect);
+		addWave(effect);
+		addWave(effect);
+		addWave(effect);
 		for (int j = 0; j < bin.size(); j++)
 		{
 			if (bin[j] == 1)
 			{
 				addWave(wave1);
+#ifdef _DEBUG
 				std::cout << '1';
+#endif
 			}
 			if (bin[j] == 0)
 			{
 				addWave(wave0);
+#ifdef _DEBUG
 				std::cout << '0';
+#endif
 			}
 		}
+		addWave(effect);
+		addWave(effect);
+		addWave(effect);
+		addWave(effect);
+		addWave(effect);
+		addWave(effect);
+		addWave(effect);
 		addWave(effect);
 		addWave(delay);
 	}
@@ -180,22 +219,43 @@ void Encoder::Generate(string message)
 	bin.clear();
 	c = "\xab\xab\xab\xab\xab\xab\xab\xab\xab\xab\xab\xab\xab\xab\xab\xabNNNN";
 	binaryConvert();
+#ifdef _DEBUG
 	std::cout << "*EOM Bin Debug: ";
+#endif
 	for (int i = 0; i < 3; i++)
 	{
+		addWave(effect);
+		addWave(effect);
+		addWave(effect);
+		addWave(effect);
+		addWave(effect);
+		addWave(effect);
+		addWave(effect);
+		addWave(effect);
 		for (int j = 0; j < bin.size(); j++)
 		{
 			if (bin[j] == 1)
 			{
 				addWave(wave1);
+#ifdef _DEBUG
 				std::cout << '1';
+#endif
 			}
 			if (bin[j] == 0)
 			{
 				addWave(wave0);
+#ifdef _DEBUG
 				std::cout << '0';
+#endif
 			}
 		}
+		addWave(effect);
+		addWave(effect);
+		addWave(effect);
+		addWave(effect);
+		addWave(effect);
+		addWave(effect);
+		addWave(effect);
 		addWave(effect);
 		addWave(delay);
 	}
@@ -206,7 +266,9 @@ void Encoder::Generate(string message)
 	}
 
 	save();
+#ifdef _DEBUG
 	std::cout << "\n\nEnd Generate\n\n";
+#endif
 }
 void Encoder::addWave(vector<float>& _in)
 {
